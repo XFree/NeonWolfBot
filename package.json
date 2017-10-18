@@ -3,7 +3,11 @@
   "version": "0.0.1",
   "description": "Эксперементы с telegram ботом",
   "main": "index.js",
+  "bin": {
+    "neonwolfbot": "src/index.js"
+  },
   "scripts": {
+    "start": "nodemon src/index",
     "test": "jasmine"
   },
   "keywords": [
@@ -12,6 +16,11 @@
   "author": "XFree",
   "license": "ISC",
   "devDependencies": {
-    "jasmine": "^2.8.0"
+    "jasmine": "^2.8.0",
+    "nodemon": "^1.12.1",
+    "tslint": "^5.7.0"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.28.0"
   }
 }
