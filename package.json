@@ -1,0 +1,17 @@
+{
+  "name": "neon-wolf-bot",
+  "version": "0.0.1",
+  "description": "Эксперементы с telegram ботом",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "keywords": [
+    "telegramBot"
+  ],
+  "author": "XFree",
+  "license": "ISC",
+  "devDependencies": {
+    "jasmine": "^2.8.0"
+  }
+}
