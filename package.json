@@ -21,6 +21,8 @@
     "tslint": "^5.7.0"
   },
   "dependencies": {
-    "node-telegram-bot-api": "^0.28.0"
+    "node-telegram-bot-api": "^0.28.0",
+    "reflect-metadata": "^0.1.10",
+    "typeorm": "^0.1.1"
   }
 }

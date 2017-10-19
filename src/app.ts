@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import * as TelegramBot from 'node-telegram-bot-api';
+import "reflect-metadata";
+
 let tg;
 
 
