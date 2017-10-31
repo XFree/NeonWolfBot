@@ -1,74 +1,63 @@
 #!/usr/bin/env node
 
-import * as TelegramBot from 'node-telegram-bot-api';
-import "reflect-metadata";
+import Telegraf = require("telegraf");
+import {Router} from "./app.routing";
+import {MeetupsPage, StartPage} from "./pages/";
+const pages = require("./pages/pages.json");
 
-let tg;
 
+class NeonWolfBot {
+  constructor(private token: string) {
 
-function create() {
-    let token = "467853890:AAHBekLC6TOracF7k3Fzf3x8ZIHSKF4hyQw";
+  }
 
-    tg = new TelegramBot(token, {
-        polling: true
+  public start() {
+    const bot = new Telegraf(this.token);
+    const router = new Router(pages);
+    bot.catch((err) => {
+      console.log("Ooops", err);
     });
 
-    tg.on('message', onMessage);
-    tg.on('callback_query', onCallbackQuery);
-}
-function onMessage(message) {
-    console.log('message:', message);
-    if (message.text && message.text.toLowerCase() == 'ping') {
-        tg.sendMessage(message.chat.id, '<pre>pong</pre>', {
-            parse_mode:'HTML'
-        });
-        return;
-    }
-    //
-    if (message.text && message.text.toLowerCase() == '/start') {
-        sendStartMessage(message);
-        return;
-    }
-}
-function sendStartMessage(message) {
-    var text = 'Добро пожаловать в нашу супер-пупер игру';
-    //
-    var helpButton = {
-        text:"Об игре",
-        callback_data:'helpCmd'
-    }
-    //
-    var gameButton = {
-        text:"Начать игру",
-        callback_data:'gameCmd',
-        request_location: true
-    }
-    //
-    var options = {};
-    options.reply_markup = {};
-    options.reply_markup.inline_keyboard = [];
-    options.reply_markup.keyboard = [];
-    options.reply_markup.inline_keyboard.push([helpButton, gameButton]);
-    options.reply_markup.keyboard.push([{ text:"Начать игру", request_location: true}]);
-    tg.sendMessage(message.chat.id, text, options);
+    bot.use(Telegraf.memorySession());
+    bot.use(router.middleware());
+    router.register(pages);
+
+    bot.startPolling();
+  }
 }
 
-function onCallbackQuery(callbackQuery) {
-    console.log('callbackQuery:', callbackQuery);
-    if (callbackQuery.data == 'helpCmd' || callbackQuery.data == 'gameCmd') {
-        var helpText = "какой то текст об игре!!!";
-        tg.sendMessage(callbackQuery.message.chat.id, helpText);
-        tg.answerCallbackQuery({callback_query_id: callbackQuery.id});
-    }
-}
-/*
+let app = new NeonWolfBot(process.env.BOT_TOKEN);
+
+app.start();
+
 
 process.title = "NeonWolfBot";
-process.on('uncaughtException', function(error) {
-    log.add('Упс, произошла непредвиденная ошибка: '+error.stack);
-    console.error(error.stack);
-    return false;
+process.on('uncaughtException', function (error) {
+  //log.add('Упс, произошла непредвиденная ошибка: '+error.stack);
+  console.error(error.stack);
+  return false;
 });
-*/
 
-create();
+function latlng2distance(lat1, long1, lat2, long2) {
+  //радиус Земли
+  const R = 6372795;
+  //перевод коордитат в радианы
+  lat1 *= Math.PI / 180;
+  lat2 *= Math.PI / 180;
+  long1 *= Math.PI / 180;
+  long2 *= Math.PI / 180;
+  //вычисление косинусов и синусов широт и разницы долгот
+  const cl1 = Math.cos(lat1);
+  const cl2 = Math.cos(lat2);
+  const sl1 = Math.sin(lat1);
+  const sl2 = Math.sin(lat2);
+  const delta = long2 - long1;
+  const cdelta = Math.cos(delta);
+  const sdelta = Math.sin(delta);
+  //вычисления длины большого круга
+  const y = Math.sqrt(Math.pow(cl2 * sdelta, 2) + Math.pow(cl1 * sl2 - sl1 * cl2 * cdelta, 2));
+  const x = sl1 * sl2 + cl1 * cl2 * cdelta;
+  const ad = Math.atan2(y, x);
+  const dist = ad * R; //расстояние между двумя координатами в метрах
+  return dist;
+}

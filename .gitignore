@@ -1,4 +1,6 @@
-
-/NeonWolfBot.ipr
-/NeonWolfBot.iml
-/NeonWolfBot.iws
+.idea/
+.vscode/
+node_modules/
+build/
+tmp/
+temp/

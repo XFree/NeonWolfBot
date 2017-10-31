@@ -1,28 +1,31 @@
 {
-  "name": "neon-wolf-bot",
-  "version": "0.0.1",
-  "description": "Эксперементы с telegram ботом",
-  "main": "index.js",
-  "bin": {
-    "neonwolfbot": "src/index.js"
-  },
-  "scripts": {
-    "start": "nodemon src/index",
-    "test": "jasmine"
-  },
-  "keywords": [
-    "telegramBot"
-  ],
-  "author": "XFree",
-  "license": "ISC",
-  "devDependencies": {
-    "jasmine": "^2.8.0",
-    "nodemon": "^1.12.1",
-    "tslint": "^5.7.0"
-  },
-  "dependencies": {
-    "node-telegram-bot-api": "^0.28.0",
-    "reflect-metadata": "^0.1.10",
-    "typeorm": "^0.1.1"
-  }
+   "name": "neon-wolf-bot",
+   "version": "0.0.1",
+   "description": "Эксперементы с telegram ботом",
+   "main": "index.js",
+   "scripts": {
+      "test": "jasmine",
+      "start": "node src/app.js",
+      "dev": "nodemon -e ts,json -w ./src -x \"tsc & node ./src/app.js\""
+   },
+   "keywords": [
+      "telegramBot"
+   ],
+   "author": "XFree",
+   "license": "ISC",
+   "typings": "typings/telegraf.d.ts",
+   "devDependencies": {
+      "@types/node": "^8.0.46",
+      "jasmine": "^2.8.0",
+      "nodemon": "^1.12.1",
+      "tslint": "^5.8.0",
+      "tslint-eslint-rules": "^4.1.1",
+      "typescript": "2.5.2",
+      "vrsource-tslint-rules": "^5.1.1"
+   },
+   "dependencies": {
+      "telegraf": "^3.14.0",
+      "telegraf-flow": "^8.3.0"
+
+   }
 }
