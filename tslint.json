@@ -8,6 +8,7 @@
     "node_modules/vrsource-tslint-rules/rules"
   ],
   "rules": {
+    "trailing-comma": [false],
     "no-console": [true, "log"],
     "no-duplicate-imports": true,
     "no-duplicate-variable": true,
@@ -32,6 +33,7 @@
     ]
   },
   "jsRules": {
+    "trailing-comma": [false],
     "no-console": [true, "log"],
     "no-duplicate-imports": true,
     "no-duplicate-variable": true,

@@ -11,13 +11,14 @@ class NeonWolfBot {
 
   public start() {
     const bot = new Telegraf(this.token);
-    const router = new Router(pages);
+    const router = new Router();
     bot.catch((err) => {
       console.log("Ooops", err);
     });
 
     bot.use(Telegraf.memorySession());
     bot.use(router.middleware());
+
     router.register(pages);
     bot.startPolling();
   }

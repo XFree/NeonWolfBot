@@ -39,44 +39,37 @@ class RouterContext {
 }
 
 export class Router extends Flow {
-  constructor(pages: any[]) {
+  constructor(pages?: any[]) {
     super();
     this.register(pages);
   }
 
   public register(pages) {
     if (pages) {
-      Object.keys(pages).forEach((pageId) => {
-        const command = pageId,
-              page    = new Scene(pageId);
+      Object.keys(pages)
+        .forEach((pageId) => {
+          const command = pageId,
+                page    = new Scene(pageId);
 
-        super.register(page);
-        page.enter(Mappings.action(pages[pageId], page));
+          super.register(page);
+          page.enter(Mappings.actions(pages[pageId], page));
 
-        this.command(command, (ctx) => {
-          ctx.router.goTo(command);
+          this.command(command, (ctx) => {
+            ctx.router.goTo(command);
+          });
         });
-      });
     }
   }
 
   public middleware() {
-    const handler = Composer.compose([
+    return Composer.compose([
       (ctx, next) => {
-        ctx.flow = new FlowContext(ctx, this.scenes, this.options);
         ctx.router = new RouterContext(ctx);
-
         return next();
       },
-      Composer.lazy(() => {
-        return this.handler;
-      }),
-      Composer.lazy((ctx) => {
-        return ctx.flow.current || Composer.safePassThru();
-      }),
+      (ctx) => {
+        super.middleware()(ctx);
+      }
     ]);
-
-    return Composer.optional((ctx) => ctx[this.options.sessionName], handler);
   }
-
 }
