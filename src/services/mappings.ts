@@ -1,18 +1,31 @@
 import {compose, Extra, Markup} from "Telegraf";
 
+interface IButton {
+  label: string;
+
+  onTab?(): void;
+}
+
 export class Mappings {
-  public static interpolate(str: string, message: any): string {
-    return (new Function("message", "return `" + str + "`"))(Object.assign({}, message));
+  public static interpolate(str: string, message: any, state: any): string {
+    const isNeeded = /\${.*?}/.test(str);
+
+    return isNeeded ? (new Function("message, state", "return `" + str + "`"))(message, state) : str;
   }
 
-  public static _action(actions, page) {
+  public static action(actions: object[] | object, page) {
     const handlers = [];
 
-    actions.forEach((topAction) => {
-      Object.keys(topAction)
-        .forEach((key) => {
-          const action = topAction[key],
-            options = Object.keys(action)
+    if (!Array.isArray(actions)) {
+      actions = Array.of(actions);
+    }
+
+    (actions as object[])
+      .forEach((topAction) => {
+        Object.keys(topAction)
+          .forEach((key) => {
+            const action = topAction[key];
+            const options = (typeof action === "string") ? [action] : Object.keys(action)
               .filter((item) => {
                 return item !== "text";
               })
@@ -20,32 +33,27 @@ export class Mappings {
                 return Mappings[optionKey] ? Mappings[optionKey](action[optionKey])(page) : action[optionKey];
               });
 
-          if (Mappings[key]) {
-            handlers.push(Mappings[key](action));
-          } else {
             handlers.push((ctx) => {
+              const executor = ctx.router[key] ? ctx.router : ctx;
               let text = action.text;
 
+              if (options.length === 1 && typeof (options[0]) === "string") {
+                options[0] = Mappings.interpolate(options[0], ctx.update.message, ctx.flow.state);
+              }
+
               if (text) {
-                if (/\${.*?}/.test(text)) {
-                  text = Mappings.interpolate(text, ctx.update.message);
-                }
-                ctx[key](text, ...options);
+                text = Mappings.interpolate(text, ctx.update.message, ctx.flow.state);
+
+                executor[key](text, ...options);
               } else {
-                ctx[key](...options);
+                executor[key](...options);
               }
             });
-          }
-        });
-    });
+
+          });
+      });
 
     return compose(handlers);
-  }
-
-  public static goTo(id: string) {
-    return (ctx) => {
-      ctx.router.goTo(id);
-    };
   }
 
   public static keyboard(keyboardMarkup) {
@@ -57,9 +65,12 @@ export class Mappings {
           return mapper(button, page);
         });
       } else {
-        if (buttons.tap) {
-          page.hears(buttons.label, Mappings._action([buttons.tap], page));
-        }
+        Object.keys(buttons)
+          .filter((key) => /^onTap$/.test(key))
+          .forEach((eventName) => {
+            page.hears(buttons.label, Mappings.action(buttons[eventName], page));
+          });
+
         result = buttons.label;
       }
 
@@ -67,7 +78,7 @@ export class Mappings {
     };
 
     return (page) => {
-      return Markup.keyboard(mapper(keyboardMarkup, page)).extra();
+      return Markup.keyboard(mapper(keyboardMarkup, page)).resize().extra();
     };
   }
 }

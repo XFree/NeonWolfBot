@@ -2,9 +2,7 @@
 
 import Telegraf = require("telegraf");
 import {Router} from "./app.routing";
-import {MeetupsPage, StartPage} from "./pages/";
 const pages = require("./pages/pages.json");
-
 
 class NeonWolfBot {
   constructor(private token: string) {
@@ -21,7 +19,6 @@ class NeonWolfBot {
     bot.use(Telegraf.memorySession());
     bot.use(router.middleware());
     router.register(pages);
-
     bot.startPolling();
   }
 }
@@ -38,7 +35,7 @@ process.on('uncaughtException', function (error) {
   return false;
 });
 
-function latlng2distance(lat1, long1, lat2, long2) {
+/*function latlng2distance(lat1, long1, lat2, long2) {
   //радиус Земли
   const R = 6372795;
   //перевод коордитат в радианы
@@ -60,4 +57,4 @@ function latlng2distance(lat1, long1, lat2, long2) {
   const ad = Math.atan2(y, x);
   const dist = ad * R; //расстояние между двумя координатами в метрах
   return dist;
-}
+}*/
