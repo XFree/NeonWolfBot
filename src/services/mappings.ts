@@ -94,7 +94,7 @@ export class Mappings {
     return new Extra().markup((markup) => {
       markup
         .resize(true)
-        .keyboard(mapper(buttonsMarkup));
+        .keyboard(mapper(buttonsMarkup), options);
 
       extra
         .forEach((extraOpts) => {
