@@ -16,6 +16,7 @@ class NeonWolfBot {
       console.log("Ooops", err);
     });
 
+    //bot.use(Telegraf.log())
     bot.use(Telegraf.memorySession());
     bot.use(router.middleware());
 

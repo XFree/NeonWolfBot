@@ -15,7 +15,7 @@
    "license": "ISC",
    "typings": "typings/telegraf.d.ts",
    "devDependencies": {
-      "@types/node": "^8.0.46",
+      "@types/node": "^8.0.47",
       "jasmine": "^2.8.0",
       "nodemon": "^1.12.1",
       "tslint": "^5.8.0",
@@ -24,8 +24,7 @@
       "vrsource-tslint-rules": "^5.1.1"
    },
    "dependencies": {
-      "telegraf": "^3.14.0",
+      "telegraf": "^3.14.1",
       "telegraf-flow": "^8.3.0"
-
    }
 }

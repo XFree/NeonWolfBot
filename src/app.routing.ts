@@ -1,7 +1,7 @@
 import {Composer, safePassThru} from "telegraf";
 import * as Flow from "telegraf-flow";
 import * as FlowContext from "telegraf-flow/lib/context";
-import {Mappings} from "./services/mappings";
+import {BMappings} from "./services/mappings";
 
 const {Scene} = Flow;
 
@@ -22,8 +22,7 @@ class RouterContext {
           history.push(currentId);
         }
         await ctx.flow.leave();
-        await ctx.flow.enter(id, {history});
-        return ctx;
+        return ctx.flow.enter(id, {history});
       }
     ]);
 
@@ -52,7 +51,7 @@ export class Router extends Flow {
                 page    = new Scene(pageId);
 
           super.register(page);
-          page.enter(Mappings.actions(pages[pageId], page));
+          page.enter(BMappings.actions(pages[pageId], page));
 
           this.command(command, (ctx) => {
             ctx.router.goTo(command);

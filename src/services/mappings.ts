@@ -1,10 +1,27 @@
 import {compose, Extra, Markup} from "Telegraf";
 
-export class Mappings {
-  public static interpolate(str: string, message: any): string {
+export class BEvent {
+  public static isEvent(prop): boolean {
+    return /^on[A-Z].*/.test(prop);
+  }
+
+  public static onAnswer(answerText, value, page) {
+
+    page.hears((text, ctx) => {
+      const replayToMessage = ctx.update.message.reply_to_message;
+      if (replayToMessage && replayToMessage.text === answerText) {
+        BMappings.actions(value, page)(ctx);
+      }
+    });
+  }
+}
+
+export class BMappings {
+  /* Интерполяция строк */
+  public static interpolate(str: string) {
     const isNeeded = /\${.*?}/.test(str);
 
-    return isNeeded ? (new Function("message", "return `" + str + "`"))(message) : str;
+    return isNeeded ? (new Function("message", "return `" + str + "`")) : (message) => str;
   }
 
   public static actions(actions: object[] | object, page) {
@@ -15,7 +32,7 @@ export class Mappings {
     }
 
     (actions as object[])
-      .forEach((topAction) => {
+      .forEach((topAction, index) => {
         Object.keys(topAction)
           .forEach((key) => {
             const action = topAction[key];
@@ -24,25 +41,47 @@ export class Mappings {
                 return item !== "text";
               })
               .map((optionKey) => {
-                return Mappings[optionKey] ? Mappings[optionKey](action[optionKey], page) : action[optionKey];
-              });
+                let result;
+
+                if (BEvent.isEvent(optionKey)) {
+                  BEvent[optionKey](action.text, action[optionKey], page);
+                } else if (BMappings[optionKey]) {
+                  result = BMappings[optionKey](action[optionKey], page);
+                } else if (Markup[optionKey]) {
+                  result = Markup[optionKey](action[optionKey]).extra();
+                } else {
+                  result = action[optionKey];
+                }
+
+                return result;
+              })
+              .filter((item) => item);
 
             handlers.push((ctx) => {
               const executor = ctx.router[key] ? ctx.router : ctx;
-              let text = action.text;
+              const text = action.text;
+              let args;
 
               if (text) {
-                text = Mappings.interpolate(text, ctx.update.message);
-
-                executor[key](text, ...options);
+                args = [text, ...options];
               } else {
-                executor[key](...options);
+                args = options;
               }
+
+              args = args.map((option) => {
+                return typeof option === "string" ? BMappings.interpolate(option)(ctx.update.message) : option;
+              });
+
+              return executor[key](...args);
             });
           });
       });
 
-    return compose(handlers);
+    return (ctx) => {
+      return compose(handlers.map((handler) => {
+        return handler(ctx);
+      }));
+    };
   }
 
   public static keyboard(keyboardMarkup, page) {
@@ -56,11 +95,11 @@ export class Mappings {
             } else {
               Object.keys(buttons)
                 .filter((prop) => {
-                  return /^on[A-Z].*/.test(prop) || (Markup[prop] && /button$/i.test(prop));
+                  return BEvent.isEvent(prop) || (Markup[prop] && /button$/i.test(prop));
                 })
                 .forEach((eventName) => {
                   if (eventName === "onTap") {
-                    page.hears(buttons.button, Mappings.actions(buttons[eventName], page));
+                    page.hears(buttons.button, BMappings.actions(buttons[eventName], page));
                   } else if (buttons[eventName] && Markup[eventName]) {
                     result = Markup[eventName](buttons[eventName], !!buttons.hide);
                   }
@@ -91,18 +130,31 @@ export class Mappings {
       buttonsMarkup = keyboardMarkup;
     }
 
-    return new Extra().markup((markup) => {
-      markup
-        .resize(true)
-        .keyboard(mapper(buttonsMarkup), options);
+    return new Extra()
+      .markup((markup) => {
+        markup
+          .resize(true)
+          .keyboard(mapper(buttonsMarkup), options);
 
-      extra
-        .forEach((extraOpts) => {
-          markup[extraOpts.method](extraOpts.args);
-        });
+        extra
+          .forEach((extraOpts) => {
+            markup[extraOpts.method](extraOpts.args);
+          });
 
-      return markup;
-    });
+        return markup;
+      });
 
+  }
+
+  constructor(public page: any) {
+
+  }
+
+  public actions(actions: object[] | object) {
+    BMappings.actions(actions, this.page);
+  }
+
+  public keyboard(keyboardMarkup) {
+    BMappings.keyboard(keyboardMarkup, this.page);
   }
 }
