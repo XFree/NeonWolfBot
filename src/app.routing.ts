@@ -1,6 +1,5 @@
 import {Composer, safePassThru} from "telegraf";
 import * as Flow from "telegraf-flow";
-import * as FlowContext from "telegraf-flow/lib/context";
 import {BMappings} from "./services/mappings";
 
 const {Scene} = Flow;
